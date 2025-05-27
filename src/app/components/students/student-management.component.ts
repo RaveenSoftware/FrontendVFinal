@@ -374,7 +374,7 @@ export class StudentManagementComponent implements OnInit {
       numeroDocumento: ['', [Validators.required]],
       tipoDocumentoId: [null, [Validators.required]],
       generoId: [null, [Validators.required]],
-       rolId: [null, [Validators.required]], // PROBANDOOOOOOooOOoooooooo
+      rolId: [null, [Validators.required]], // PROBANDOOOOOOooOOoooooooo
 
       // Academic Data
       codigoInstitucional: ['', [Validators.required]],
@@ -386,23 +386,23 @@ export class StudentManagementComponent implements OnInit {
 
   roles: any[] = [];
 
-ngOnInit() {
-  this.loadStudents();
-  this.loadTiposDocumento();
-  this.loadGeneros();
-  this.loadRoles(); // nuevo
-}
+  ngOnInit() {
+    this.loadStudents();
+    this.loadTiposDocumento();
+    this.loadGeneros();
+    this.loadRoles(); // nuevo
+  }
 
-loadRoles() {
-  this.studentService.getRoles().subscribe({
-    next: (roles) => {
-      this.roles = roles;
-    },
-    error: (err) => {
-      console.error('Error al cargar roles:', err);
-    }
-  });
-}
+  loadRoles() {
+    this.studentService.getRoles().subscribe({
+      next: (roles) => {
+        this.roles = roles;
+      },
+      error: (err) => {
+        console.error('Error al cargar roles:', err);
+      }
+    });
+  }
 
   loadStudents() {
     this.studentService.list().subscribe({
@@ -469,15 +469,14 @@ loadRoles() {
       numeroDocumento: this.form.value.numeroDocumento,
       tipoDocumentoId: this.form.value.tipoDocumentoId,
       generoId: this.form.value.generoId,
-      rolId: 3, // o el ID de rol que estés usando
-
+      rolId: this.form.value.rolId,
       codigoInstitucional: this.form.value.codigoInstitucional,
       correoInstitucional: this.form.value.correoInstitucional,
       programaId: this.form.value.programaId,
       estado: this.form.value.estado
     };
 
-    console.log('🚀 Enviando solo datos limpios al backend:', studentData);
+    console.log('📤 Enviando DTO plano:', studentData);
 
     this.studentService.create(studentData).subscribe({
       next: () => {
@@ -486,8 +485,12 @@ loadRoles() {
         this.cancelForm();
       },
       error: (err) => {
-        console.error('❌ Error al crear estudiante:', err);
-        alert('Hubo un error al crear el estudiante');
+        console.error('❌ Error completo al crear estudiante:', err);
+        if (err.error && err.error.message) {
+          alert('Error del servidor: ' + err.error.message);
+        } else {
+          alert('Error desconocido al crear el estudiante. Revisa la consola.');
+        }
       }
     });
   }
@@ -502,7 +505,13 @@ loadRoles() {
         },
         error: (err) => {
           console.error('Error al eliminar:', err);
-          alert('Hubo un error al eliminar el estudiante');
+          if (typeof err.error === 'string') {
+            alert('Error del servidor: ' + err.error);
+          } else if (err.error && err.error.message) {
+            alert('Error del servidor: ' + err.error.message);
+          } else {
+            alert('Error desconocido al crear el estudiante. Revisa la consola.');
+          }
         }
       });
     }
